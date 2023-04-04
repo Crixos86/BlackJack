@@ -7,6 +7,11 @@ PORT = 12345
 game = BlackJackGame()
 
 def handle_player_turn(conn, player_num, player_hand):
+    hand_value = game.calculate_hand_value(player_hand)
+    if hand_value > 21:
+        print(f"Player {player_num} is busted with a hand value of {hand_value}.")
+        return 'stand'
+
     action = conn.recv(1024).decode()
     print(f"Player {player_num} action: {action}")
     if action == 'hit':
