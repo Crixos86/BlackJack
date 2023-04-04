@@ -1,10 +1,19 @@
 import socket
 from game_logic import BlackJackGame
-#SERVER
+
 HOST = 'localhost'
 PORT = 12345
 
 game = BlackJackGame()
+
+def handle_player_turn(conn, player_num, player_hand):
+    action = conn.recv(1024).decode()
+    print(f"Player {player_num} action: {action}")
+    if action == 'hit':
+        card = game.deal_card()
+        player_hand.append(card)
+        conn.sendall(str(card).encode())
+    return action
 
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server_socket:
     server_socket.bind((HOST, PORT))
@@ -13,36 +22,53 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server_socket:
 
     conn1, addr1 = server_socket.accept()
     print(f"Bank: Player 1 connected from {addr1}")
+    conn1.sendall("Player 1".encode())
 
     conn2, addr2 = server_socket.accept()
     print(f"Bank: Player 2 connected from {addr2}")
+    conn2.sendall("Player 2".encode())
 
-    # Anfangsblatt an die Spieler verteilen
-    hand1 = [game.deal_card(), game.deal_card()]
-    hand2 = [game.deal_card(), game.deal_card()]
+    player1_hand = [game.deal_card(), game.deal_card()]
+    player2_hand = [game.deal_card(), game.deal_card()]
 
-    conn1.sendall(str(hand1).encode())
-    conn2.sendall(str(hand2).encode())
+    conn1.sendall(str(player1_hand).encode())
+    conn2.sendall(str(player2_hand).encode())
 
-    # Annahme von Spielaktionen der Spieler (Hit or Stand)
-    actions = [None, None]
-    for i, conn in enumerate([conn1, conn2]):
-        action = conn.recv(1024).decode()
-        actions[i] = action
-        print(f"Player {i + 1} action: {action}")
+    while True:
+        action1 = handle_player_turn(conn1, 1, player1_hand)
+        action2 = handle_player_turn(conn2, 2, player2_hand)
 
-    # Spiellogik und Kommunikation zwischen Bank und Spielern
-    for i, (action, conn, hand) in enumerate(zip(actions, [conn1, conn2], [hand1, hand2])):
-        if action == 'Hit':
-            hand.append(game.deal_card())
-            conn.sendall(str(hand).encode())
+        if action1 == 'stand' and action2 == 'stand':
+            break
+
+    player1_value = game.calculate_hand_value(player1_hand)
+    player2_value = game.calculate_hand_value(player2_hand)
+
+    if player1_value > 21:
+        if player2_value > 21:
+            result1 = "Both players busted. It's a draw."
+            result2 = result1
         else:
-            conn.sendall(b"Stand")
+            result1 = "You busted. You lost."
+            result2 = "Player 1 busted. You won."
+    elif player2_value > 21:
+        result1 = "Player 2 busted. You won."
+        result2 = "You busted. You lost."
+    elif player1_value > player2_value:
+        result1 = "You won."
+        result2 = "You lost."
+    elif player1_value < player2_value:
+        result1 = "You lost."
+        result2 = "You won."
+    else:
+        result1 = "It's a draw."
+        result2 = result1
 
-    # Ergebnisse berechnen und an Spieler senden
-    hand_values = [game.calculate_hand_value(hand1), game.calculate_hand_value(hand2)]
-    results = ['Draw' if hand_values[0] == hand_values[1] else 'Win' if hand_values[0] > hand_values[1] else 'Lose']
-    results = [result if hand_value <= 21 else 'Bust' for result, hand_value in zip(results, hand_values)]
+    conn1.sendall(result1.encode())
+    conn2.sendall(result2.encode())
 
-    for conn, result in zip([conn1, conn2], results):
-        conn.sendall(result.encode())
+    conn1.close()
+    conn2.close()
+    print("Game finished.")
+
+
