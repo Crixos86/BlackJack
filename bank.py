@@ -64,20 +64,22 @@ def main_bank_ui():
 
         conn2.sendall(json.dumps(player2_hand).encode())
         
-        while True:
-            if game.calculate_hand_value(player1_hand) <= 21:
+        player1_standing = False
+        player2_standing = False
+
+        while not (player1_standing and player2_standing):
+            if not player1_standing:
                 action1 = handle_player_turn(conn1, 1, player1_hand)
-            else:
-                action1 = 'stand'
-            
-            if game.calculate_hand_value(player2_hand) <= 21:
+                player1_standing = action1 == 'stand'
+            if not player2_standing:
                 action2 = handle_player_turn(conn2, 2, player2_hand)
-            else:
-                action2 = 'stand'
+                player2_standing = action2 == 'stand'
 
             bank_window.update()
-            if action1 == 'stand' and action2 == 'stand':
+
+            if game.calculate_hand_value(player1_hand) > 21 and game.calculate_hand_value(player2_hand) > 21:
                 break
+
        
 
 
