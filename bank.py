@@ -128,7 +128,7 @@ def main_bank_ui():
         else:
             winner = "Draw"
 
-        game_status.set(f"Game finished. Winner: {winner}")
+        game_status.set("Game finished. %s" %("It\'s a draw." if winner == "Draw" else f"Winner: {winner}"))
 
 
     bank_window.mainloop()
