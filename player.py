@@ -3,12 +3,27 @@ from game_logic import BlackJackGame
 import tkinter as tk
 from tkinter import messagebox
 import json
+from PIL import Image, ImageTk
+import os
 
 HOST = 'localhost'
 PORT = 12345
 game = BlackJackGame()
+__location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
 
-def display_hand(hand):
+def display_hand(hand, window):
+    imgs = []
+    for card in hand:
+        imgs.append(Image.open(os.path.join(__location__,
+                                            'imgs', card['rank'] + "_of_" + card['suit'] + ".png")))
+    for index, img in enumerate(imgs):
+        width, height = img.size
+        img = img.resize((int(width*0.2), int(height*0.2)), Image.ANTIALIAS)
+        tki = ImageTk.PhotoImage(img)
+        l = tk.Label(window, image=tki)
+        l.grid(row=3, column=0+index*4, columnspan=2)
+        l.img = tki
+        print(index)
     return ', '.join([f"{card['rank']} of {card['suit']}" for card in hand])
 
 def create_player_ui():
@@ -27,9 +42,13 @@ def create_player_ui():
     stand_button = tk.Button(window, text="Stand", state="disabled")
     stand_button.grid(row=2, column=1)
 
+    
+
     def update_hand(hand):
-        hand_label['text'] = f"Your hand: {display_hand(hand)}"
+        hand_label['text'] = f"Your hand: {display_hand(hand, window)}"
         hand_value_label['text'] = f"Hand value: {game.calculate_hand_value(hand)}"
+    
+    
 
     def set_buttons_state(state):
         hit_button['state'] = state
@@ -38,7 +57,7 @@ def create_player_ui():
     return window, update_hand, set_buttons_state, hit_button, stand_button
 
 def main_player_ui():
-    player_window, update_hand, set_buttons_state, hit_button, stand_button = create_player_ui()
+    player_window, update_hand, set_buttons_state, hit_button, stand_button= create_player_ui()
 
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
         client_socket.connect((HOST, PORT))
