@@ -55,7 +55,7 @@ def main_bank_ui():
         print(f"Bank: Sending initial hand to Player 1: {player1_hand}")
 
         conn1.sendall(json.dumps(player1_hand).encode())
-
+        
         print(f"Bank: Sending initial hand to Player 2: {player2_hand}")
 
         conn2.sendall(json.dumps(player2_hand).encode())
