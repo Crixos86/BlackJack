@@ -4,22 +4,6 @@ import tkinter as tk
 import json
 
 def main_bank_ui():
-    # def handle_player_turn(conn, player_num, player_hand):
-    #     print(f"Bank: Handling turn for Player {player_num}")
-
-    #     hand_value = game.calculate_hand_value(player_hand)
-    #     if hand_value > 21:
-    #         game_status.set(f"Player {player_num} is busted with a hand value of {hand_value}.")
-    #         return 'stand'
-
-    #     action = conn.recv(1024).decode()
-    #     game_status.set(f"Player {player_num} action: {action}")
-    #     if action == 'hit':
-    #         card = game.deal_card()
-    #         player_hand.append(card)
-    #         print(f"Bank: Sending card to Player {player_num}: {card}")
-    #         conn.sendall(str(card).encode())
-    #     return action
     def handle_player_turn(conn, player_num, player_hand):
         hand_value = game.calculate_hand_value(player_hand)
         if hand_value > 21:
