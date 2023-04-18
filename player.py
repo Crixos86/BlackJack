@@ -1,50 +1,86 @@
 import socket
 from game_logic import BlackJackGame
-
-def display_hand(hand):
-    return ', '.join([f"{card['rank']} of {card['suit']}" for card in hand])
-
-def get_player_action():
-    while True:
-        action = input("Enter 'hit' or 'stand': ")
-        if action.lower() in ['hit', 'stand']:
-            return action.lower()
-        else:
-            print("Invalid input. Please enter 'hit' or 'stand'.")
+import tkinter as tk
+from tkinter import messagebox
+import json
 
 HOST = 'localhost'
 PORT = 12345
 game = BlackJackGame()
 
-with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
-    client_socket.connect((HOST, PORT))
-    print("Connected to the bank...")
+def display_hand(hand):
+    return ', '.join([f"{card['rank']} of {card['suit']}" for card in hand])
 
-    player_num = client_socket.recv(1024).decode()
-    print(f"You are {player_num}")
+def create_player_ui():
+    window = tk.Tk()
+    window.title("Blackjack - Player")
 
-    hand = eval(client_socket.recv(1024).decode())
-    print(f"Your initial hand: {display_hand(hand)}")
+    hand_label = tk.Label(window, text="")
+    hand_label.grid(row=0, column=0)
 
-    while True:
-        hand_value = game.calculate_hand_value(hand)
-        if hand_value > 21:
-            print(f"You are busted with a hand value of {hand_value}.")
-            break
+    hand_value_label = tk.Label(window, text="")
+    hand_value_label.grid(row=1, column=0)
 
-        action = get_player_action()
-        client_socket.sendall(action.encode())
+    hit_button = tk.Button(window, text="Hit", state="disabled")
+    hit_button.grid(row=2, column=0)
 
-        if action == 'hit':
-            card = eval(client_socket.recv(1024).decode())
+    stand_button = tk.Button(window, text="Stand", state="disabled")
+    stand_button.grid(row=2, column=1)
+
+    def update_hand(hand):
+        hand_label['text'] = f"Your hand: {display_hand(hand)}"
+        hand_value_label['text'] = f"Hand value: {game.calculate_hand_value(hand)}"
+
+    def set_buttons_state(state):
+        hit_button['state'] = state
+        stand_button['state'] = state
+
+    return window, update_hand, set_buttons_state, hit_button, stand_button
+
+def main_player_ui():
+    player_window, update_hand, set_buttons_state, hit_button, stand_button = create_player_ui()
+
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
+        client_socket.connect((HOST, PORT))
+        player_num = client_socket.recv(1024).decode()
+        player_window.title(f"Blackjack - {player_num}")
+        print("Player: Receiving initial hand")
+        hand = json.loads(client_socket.recv(1024).decode())
+        update_hand(hand)
+        set_buttons_state("normal")
+
+        def hit():
+            client_socket.sendall("hit".encode())
+            response = client_socket.recv(1024).decode()
+            try:
+                card = json.loads(response)
+            except json.JSONDecodeError:
+                print("Invalid JSON format received.")
+                return
             hand.append(card)
-            print(f"Received card: {display_hand([card])}")
-            print(f"Your updated hand: {display_hand(hand)}")
-            print(f"Your current hand value: {game.calculate_hand_value(hand)}")
-        else:
-            break
+            update_hand(hand)
+            if game.calculate_hand_value(hand) > 21:
+                set_buttons_state("disabled")
+                messagebox.showinfo("Busted", "You are busted. Wait for the game result.")
+                player_window.quit()
 
-    print("Waiting for the game result...")
 
-    result = client_socket.recv(1024).decode()
-    print(f"Game result: {result}")
+
+        def stand():
+            client_socket.sendall("stand".encode())
+            set_buttons_state("disabled")
+            messagebox.showinfo("Stand", "You chose to stand. Wait for the game result.")
+            player_window.quit()
+
+        hit_button['command'] = hit
+        stand_button['command'] = stand
+
+        player_window.mainloop()
+
+        print("Waiting for the game result...")
+        result = client_socket.recv(1024).decode()
+        print(f"Game result: {result}")
+        messagebox.showinfo("Game result", result)
+
+if __name__ == "__main__":
+    main_player_ui()
