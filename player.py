@@ -6,7 +6,6 @@ import json
 from PIL import Image, ImageTk
 import os
 from tkinter import Frame
-from tkinter import Label
 
 HOST = 'localhost'
 PORT = 12345
@@ -30,7 +29,7 @@ def display_hand(hand, window):
         else:
             l.grid(row=1, column=index-3)
         l.img = tki
-        
+        window.update()
     return ', '.join([f"{card['rank']} of {card['suit']}" for card in hand])
 
 def create_player_ui():
@@ -68,6 +67,7 @@ def create_player_ui():
         result_label['text'] = f"Game result: {result}"    
 
     return window, update_hand, set_buttons_state, hit_button, stand_button, update_result
+
 
 def main_player_ui():
     player_window, update_hand, set_buttons_state, hit_button, stand_button, update_result = create_player_ui()
