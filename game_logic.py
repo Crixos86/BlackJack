@@ -28,6 +28,6 @@ class BlackJackGame:
 
         while value > 21 and aces:
             value -=  10
-        aces -= 1
+            aces -= 1
 
         return value
