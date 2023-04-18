@@ -92,6 +92,20 @@ def main_player_ui():
 
         hit_button['command'] = hit
         stand_button['command'] = stand
+        screen_width = player_window.winfo_screenwidth()
+        screen_height = player_window.winfo_screenheight()
+
+        window_width = 600
+        window_height = 300
+
+        if player_num == "Player 1":
+            x_position = 0
+        else:
+            x_position = screen_width - window_width
+
+        y_position = window_height
+
+        player_window.geometry(f"{window_width}x{window_height}+{x_position}+{y_position}")
 
         player_window.mainloop()
 

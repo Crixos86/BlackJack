@@ -25,6 +25,16 @@ def main_bank_ui():
 
 
     bank_window = tk.Tk()
+    screen_width = bank_window.winfo_screenwidth()
+    screen_height = bank_window.winfo_screenheight()
+
+    window_width = 300
+    window_height = 200
+
+    x_position = (screen_width - window_width) // 2
+    y_position = 0
+
+    bank_window.geometry(f"{window_width}x{window_height}+{x_position}+{y_position}")
     bank_window.title("Blackjack - Bank")
 
     game_status = tk.StringVar()
