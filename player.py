@@ -48,6 +48,9 @@ def create_player_ui():
 
     stand_button = tk.Button(window, text="Stand", state="disabled")
     stand_button.grid(row=2, column=1)
+    result_label = tk.Label(window, text="", font=("Arial", 12, "bold"))
+    result_label.grid(row=3, column=0, columnspan=2)
+
 
     
 
@@ -61,10 +64,13 @@ def create_player_ui():
         hit_button['state'] = state
         stand_button['state'] = state
 
-    return window, update_hand, set_buttons_state, hit_button, stand_button
+    def update_result(result):
+        result_label['text'] = f"Game result: {result}"    
+
+    return window, update_hand, set_buttons_state, hit_button, stand_button, update_result
 
 def main_player_ui():
-    player_window, update_hand, set_buttons_state, hit_button, stand_button= create_player_ui()
+    player_window, update_hand, set_buttons_state, hit_button, stand_button, update_result = create_player_ui()
 
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
         client_socket.connect((HOST, PORT))
@@ -120,7 +126,9 @@ def main_player_ui():
         print("Waiting for the game result...")
         result = client_socket.recv(1024).decode()
         print(f"Game result: {result}")
-        messagebox.showinfo("Game result", result)
+        update_result(result)
+
+
 
 if __name__ == "__main__":
     main_player_ui()

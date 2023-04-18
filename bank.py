@@ -121,7 +121,14 @@ def main_bank_ui():
 
         conn1.close()
         conn2.close()
-        game_status.set("Game finished.")
+        if result1 == "You won.":
+            winner = "Player 1"
+        elif result2 == "You won.":
+            winner = "Player 2"
+        else:
+            winner = "Draw"
+
+        game_status.set(f"Game finished. Winner: {winner}")
 
 
     bank_window.mainloop()
