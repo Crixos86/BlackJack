@@ -21,9 +21,8 @@ def display_hand(hand, window):
         img = img.resize((int(width*0.2), int(height*0.2)), Image.ANTIALIAS)
         tki = ImageTk.PhotoImage(img)
         l = tk.Label(window, image=tki)
-        l.grid(row=3, column=0+index*4, columnspan=2)
+        l.grid(row=3, column=0+index)
         l.img = tki
-        print(index)
     return ', '.join([f"{card['rank']} of {card['suit']}" for card in hand])
 
 def create_player_ui():
