@@ -66,7 +66,7 @@ def main_bank_ui():
 
             if action1 == 'stand' and action2 == 'stand':
                 break
-
+            bank_window.update()     
             if game.calculate_hand_value(player1_hand) > 21 and game.calculate_hand_value(player2_hand) > 21:
                 break
             bank_window.update()        
