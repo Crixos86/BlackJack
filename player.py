@@ -5,6 +5,8 @@ from tkinter import messagebox
 import json
 from PIL import Image, ImageTk
 import os
+from tkinter import Frame
+from tkinter import Label
 
 HOST = 'localhost'
 PORT = 12345
@@ -13,6 +15,8 @@ __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file
 
 def display_hand(hand, window):
     imgs = []
+    Frame1 = Frame(window)
+    Frame1.grid(row=3, column=0, columnspan=29, rowspan=1, sticky="nsew")
     for card in hand:
         imgs.append(Image.open(os.path.join(__location__,
                                             'imgs', card['rank'] + "_of_" + card['suit'] + ".png")))
@@ -20,9 +24,13 @@ def display_hand(hand, window):
         width, height = img.size
         img = img.resize((int(width*0.2), int(height*0.2)), Image.ANTIALIAS)
         tki = ImageTk.PhotoImage(img)
-        l = tk.Label(window, image=tki)
-        l.grid(row=3, column=0+index)
+        l = tk.Label(Frame1, image=tki)
+        if index<3:
+            l.grid(row=0, column=index)
+        else:
+            l.grid(row=1, column=index-3)
         l.img = tki
+        
     return ', '.join([f"{card['rank']} of {card['suit']}" for card in hand])
 
 def create_player_ui():
