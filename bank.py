@@ -95,7 +95,11 @@ def main_bank_ui():
 
                 bank_window.update()
 
-                if game.calculate_hand_value(player1_hand) > 21 and game.calculate_hand_value(player2_hand) > 21:
+                player1_value = game.calculate_hand_value(player1_hand)
+                player2_value = game.calculate_hand_value(player2_hand)
+
+                # Prüfen, ob einer der Spieler über 21 ist und der andere Spieler steht.
+                if (player1_value > 21 and player2_standing) or (player2_value > 21 and player1_standing):
                     break
 
         
