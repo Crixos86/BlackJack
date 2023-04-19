@@ -4,15 +4,15 @@ import multiprocessing
 import time
 
 def run_bank():
-    os.system("python3 bank.py")
+    os.system(f"{sys.executable} bank.py")
 
 def run_player1():
-    time.sleep(1)  
-    os.system("python3 player.py")
+    time.sleep(3)  
+    os.system(f"{sys.executable} player.py")
 
 def run_player2():
-    time.sleep(1)  
-    os.system("python3 player.py")
+    time.sleep(3)  
+    os.system(f"{sys.executable} player.py")
 
 if __name__ == "__main__":
     bank_process = multiprocessing.Process(target=run_bank)
