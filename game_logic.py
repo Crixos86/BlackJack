@@ -1,4 +1,6 @@
-import secrets
+import hashlib
+import random
+import time
 
 class BlackJackGame:
     def __init__(self):
@@ -12,7 +14,11 @@ class BlackJackGame:
         return deck
 
     def shuffle_deck(self):
-        secrets.SystemRandom().shuffle(self.deck)
+        hash_object = hashlib.sha256()
+        hash_object.update(str(time.time()).encode())
+        seed = int(hash_object.hexdigest(), 16)
+        random.seed(seed)
+        random.shuffle(self.deck)
 
     def deal_card(self):
         return self.deck.pop()
