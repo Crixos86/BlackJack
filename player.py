@@ -9,9 +9,9 @@ from tkinter import Frame
 import socket
 import select
 
+INITIAL_PORT = 12345
 
 HOST = 'localhost'
-PORT = 12345
 game = BlackJackGame()
 __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
 
@@ -74,73 +74,80 @@ def create_player_ui():
 def main_player_ui():
     player_window, update_hand, set_buttons_state, hit_button, stand_button, update_result = create_player_ui()
 
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
-        client_socket.connect((HOST, PORT))
-        client_socket.settimeout(2.0)  # Set a timeout of 2 seconds
 
-        player_num = client_socket.recv(1024).decode()
-        player_window.title(f"Blackjack - {player_num}")
-        print("Player: Receiving initial hand")
-        hand = json.loads(client_socket.recv(1024).decode())
-        update_hand(hand)
-        set_buttons_state("normal")
-
-        def hit():
-            client_socket.sendall("hit".encode())
-            response = client_socket.recv(1024).decode()
+    def player_program(PORT):
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
             try:
-                card = json.loads(response)
-            except json.JSONDecodeError:
-                print("Invalid JSON format received.")
-                return
-            hand.append(card)
+                client_socket.connect((HOST, PORT))
+            except:
+                PORT=PORT+1
+                player_program(PORT)
+            client_socket.settimeout(2.0)  # Set a timeout of 2 seconds
+
+            player_num = client_socket.recv(1024).decode()
+            player_window.title(f"Blackjack - {player_num}")
+            print("Player: Receiving initial hand")
+            hand = json.loads(client_socket.recv(1024).decode())
             update_hand(hand)
-            if game.calculate_hand_value(hand) > 21:
+            set_buttons_state("normal")
+
+            def hit():
+                client_socket.sendall("hit".encode())
+                response = client_socket.recv(1024).decode()
+                try:
+                    card = json.loads(response)
+                except json.JSONDecodeError:
+                    print("Invalid JSON format received.\n" + response)
+                    return
+                hand.append(card)
+                update_hand(hand)
+                if game.calculate_hand_value(hand) > 21:
+                    set_buttons_state("disabled")
+                    player_window.quit()
+
+            def stand():
+                client_socket.sendall("stand".encode())
                 set_buttons_state("disabled")
                 player_window.quit()
 
-        def stand():
-            client_socket.sendall("stand".encode())
-            set_buttons_state("disabled")
-            player_window.quit()
+            hit_button['command'] = hit
+            stand_button['command'] = stand
 
-        hit_button['command'] = hit
-        stand_button['command'] = stand
+            screen_width = player_window.winfo_screenwidth()
+            screen_height = player_window.winfo_screenheight()
 
-        screen_width = player_window.winfo_screenwidth()
-        screen_height = player_window.winfo_screenheight()
+            window_width = 600
+            window_height = 300
 
-        window_width = 600
-        window_height = 300
+            if player_num == "Player 1":
+                x_position = 0
+            else:
+                x_position = screen_width - window_width
 
-        if player_num == "Player 1":
-            x_position = 0
-        else:
-            x_position = screen_width - window_width
+            y_position = window_height
 
-        y_position = window_height
+            player_window.geometry(f"{window_width}x{window_height}+{x_position}+{y_position}")
 
-        player_window.geometry(f"{window_width}x{window_height}+{x_position}+{y_position}")
+            def on_close():
+                nonlocal running
+                running = False
+                player_window.destroy()
 
-        def on_close():
-            nonlocal running
-            running = False
-            player_window.destroy()
+            player_window.protocol("WM_DELETE_WINDOW", on_close)
 
-        player_window.protocol("WM_DELETE_WINDOW", on_close)
-
-        running = True
-        while running:
-            player_window.update_idletasks()
-            player_window.update()
-            ready_to_read, _, _ = select.select([client_socket], [], [], 0.1)
-            if ready_to_read:
-                result = client_socket.recv(1024).decode()
-                print(f"Game result: {result}")
-                #update_result(result)
-                break
-        update_result(result)
-        player_window.mainloop()    
+            running = True
+            while running:
+                player_window.update_idletasks()
+                player_window.update()
+                ready_to_read, _, _ = select.select([client_socket], [], [], 0.1)
+                if ready_to_read:
+                    result = client_socket.recv(1024).decode()
+                    print(f"Game result: {result}")
+                    #update_result(result)
+                    break
+            update_result(result)
+            player_window.mainloop()
+    player_program(INITIAL_PORT)
 
 if __name__ == "__main__":
     main_player_ui()
