@@ -137,8 +137,10 @@ def main_player_ui():
             if ready_to_read:
                 result = client_socket.recv(1024).decode()
                 print(f"Game result: {result}")
-                update_result(result)
+                #update_result(result)
                 break
+        update_result(result)
+        player_window.mainloop()    
 
 if __name__ == "__main__":
     main_player_ui()
