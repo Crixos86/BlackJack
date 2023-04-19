@@ -1,9 +1,9 @@
-import random
+import secrets
 
 class BlackJackGame:
     def __init__(self):
         self.deck = self.create_deck()
-        random.shuffle(self.deck)
+        self.shuffle_deck()
 
     def create_deck(self):
         suits = ['Hearts', 'Diamonds', 'Clubs', 'Spades']
@@ -11,16 +11,19 @@ class BlackJackGame:
         deck = [{'suit': suit, 'rank': rank} for suit in suits for rank in ranks]
         return deck
 
+    def shuffle_deck(self):
+        secrets.SystemRandom().shuffle(self.deck)
+
     def deal_card(self):
         return self.deck.pop()
 
     def get_card_value(self, card):
-            if card['rank'] in ['Jack', 'Queen', 'King']:
-                return 10
-            elif card['rank'] == 'Ace':
-                return 11
-            else:
-                return int(card['rank'])
+        if card['rank'] in ['Jack', 'Queen', 'King']:
+            return 10
+        elif card['rank'] == 'Ace':
+            return 11
+        else:
+            return int(card['rank'])
 
     def calculate_hand_value(self, hand):
         value = sum([self.get_card_value(card) for card in hand])
