@@ -76,7 +76,8 @@ def main_player_ui():
 
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
         client_socket.connect((HOST, PORT))
-        client_socket.setblocking(False)
+        client_socket.settimeout(2.0)  # Set a timeout of 2 seconds
+
         player_num = client_socket.recv(1024).decode()
         player_window.title(f"Blackjack - {player_num}")
         print("Player: Receiving initial hand")
