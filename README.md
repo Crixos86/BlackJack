@@ -1,4 +1,5 @@
 # BlackJack
+Anmerkung: Es wurde besonders viel Wert und Zeit auf die Entwicklung des UI's und einer ausführlichen Dokumentation gelegt. </br>
 Das vorliegende Projekt beinhaltet eine Implementierung des Kartenspiels Blackjack. Die Implementierung besteht aus vier Python-Dateien: 
 - `game_logic.py`
 - `bank.py`
