@@ -6,11 +6,16 @@ import json
 from PIL import Image, ImageTk
 import os
 from tkinter import Frame
+import socket
+import select
+
+socket.setdefaulttimeout(0.1)
 
 HOST = 'localhost'
 PORT = 12345
 game = BlackJackGame()
 __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
+
 
 def display_hand(hand, window):
     imgs = []
@@ -24,13 +29,14 @@ def display_hand(hand, window):
         img = img.resize((int(width*0.2), int(height*0.2)), Image.ANTIALIAS)
         tki = ImageTk.PhotoImage(img)
         l = tk.Label(Frame1, image=tki)
-        if index<3:
+        if index < 3:
             l.grid(row=0, column=index)
         else:
-            l.grid(row=1, column=index-3)
+            l.grid(row=1, column=index - 3)
         l.img = tki
         window.update()
     return ', '.join([f"{card['rank']} of {card['suit']}" for card in hand])
+
 
 def create_player_ui():
     window = tk.Tk()
@@ -47,26 +53,23 @@ def create_player_ui():
 
     stand_button = tk.Button(window, text="Stand", state="disabled")
     stand_button.grid(row=2, column=1)
+
     result_label = tk.Label(window, text="", font=("Arial", 12, "bold"))
     result_label.grid(row=3, column=0, columnspan=2)
-
-
-    
 
     def update_hand(hand):
         hand_label['text'] = f"Your hand: {display_hand(hand, window)}"
         hand_value_label['text'] = f"Hand value: {game.calculate_hand_value(hand)}"
-    
-    
 
     def set_buttons_state(state):
         hit_button['state'] = state
         stand_button['state'] = state
 
     def update_result(result):
-        result_label['text'] = f"Game result: {result}"    
+        result_label['text'] = f"Game result: {result}"
 
     return window, update_hand, set_buttons_state, hit_button, stand_button, update_result
+
 
 
 def main_player_ui():
@@ -93,19 +96,16 @@ def main_player_ui():
             update_hand(hand)
             if game.calculate_hand_value(hand) > 21:
                 set_buttons_state("disabled")
-                messagebox.showinfo("Busted", "You are busted. Wait for the game result.")
                 player_window.quit()
-
-
 
         def stand():
             client_socket.sendall("stand".encode())
             set_buttons_state("disabled")
-            messagebox.showinfo("Stand", "You chose to stand. Wait for the game result.")
             player_window.quit()
 
         hit_button['command'] = hit
         stand_button['command'] = stand
+
         screen_width = player_window.winfo_screenwidth()
         screen_height = player_window.winfo_screenheight()
 
@@ -121,14 +121,23 @@ def main_player_ui():
 
         player_window.geometry(f"{window_width}x{window_height}+{x_position}+{y_position}")
 
-        player_window.mainloop()
+        def on_close():
+            nonlocal running
+            running = False
+            player_window.destroy()
 
-        print("Waiting for the game result...")
-        result = client_socket.recv(1024).decode()
-        print(f"Game result: {result}")
-        update_result(result)
+        player_window.protocol("WM_DELETE_WINDOW", on_close)
 
-
+        running = True
+        while running:
+            player_window.update_idletasks()
+            player_window.update()
+            ready_to_read, _, _ = select.select([client_socket], [], [], 0.1)
+            if ready_to_read:
+                result = client_socket.recv(1024).decode()
+                print(f"Game result: {result}")
+                update_result(result)
+                break
 
 if __name__ == "__main__":
     main_player_ui()
