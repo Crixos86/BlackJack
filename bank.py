@@ -36,6 +36,7 @@ def main_bank_ui():
 
     bank_window.geometry(f"{window_width}x{window_height}+{x_position}+{y_position}")
     bank_window.title("Blackjack - Bank")
+    bank_window.attributes('-topmost', True) 
 
     game_status = tk.StringVar()
     game_status.set("Waiting for players to connect...")
