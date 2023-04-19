@@ -9,7 +9,6 @@ from tkinter import Frame
 import socket
 import select
 
-socket.setdefaulttimeout(0.1)
 
 HOST = 'localhost'
 PORT = 12345
@@ -77,6 +76,7 @@ def main_player_ui():
 
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
         client_socket.connect((HOST, PORT))
+        client_socket.setblocking(False)
         player_num = client_socket.recv(1024).decode()
         player_window.title(f"Blackjack - {player_num}")
         print("Player: Receiving initial hand")
