@@ -106,14 +106,14 @@ def main_bank_ui():
 
             if player1_value > 21:
                 if player2_value > 21:
-                    result1 = "Both players busted. It's a draw."
+                    result1 = "It's a draw."
                     result2 = result1
                 else:
-                    result1 = "You busted. You lost."
-                    result2 = "Player 1 busted. You won."
+                    result1 = "You lost."
+                    result2 = "You won."
             elif player2_value > 21:
-                result1 = "Player 2 busted. You won."
-                result2 = "You busted. You lost."
+                result1 = "You won."
+                result2 = "You lost."
             elif player1_value > player2_value:
                 result1 = "You won."
                 result2 = "You lost."
