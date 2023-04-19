@@ -141,6 +141,9 @@ def main_bank_ui():
                 winner = "Draw"
 
             game_status.set("Game finished. %s" %("It\'s a draw." if winner == "Draw" else f"Winner: {winner}"))
+            # Fügen Sie die folgende Zeile hinzu, um die Aktualisierung des Bank-Fensters zu erzwingen
+            bank_window.update_idletasks()
+            bank_window.update()
     bank_program(INITIAL_PORT)
     bank_window.mainloop()
 
